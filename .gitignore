@@ -1,0 +1,57 @@
+# --- Go ---
+# Compiled binaries
+/bin/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin/
+/pkg/queen/queen
+/pkg/queen/queen.exe
+/pkg/worker/worker
+/pkg/worker/worker.exe
+
+# Test binaries / coverage
+*.test
+*.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# --- Project data ---
+/data/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# --- Editor / OS ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Build artifacts ---
+/pkg/queen/internal/db/migrations/*.sql.bak
+
+# --- Source archives (large; consumed by build/extract steps, not version-controlled) ---
+# These live at the repo root and also under /resources/source/ when present.
+/Fsg-Generator-MCBE-main.zip
+/Ranked1.3.mcaddon
+/Fsg-Generator-MCBE-main.zip:Zone.Identifier
+/Ranked1.3.mcaddon:Zone.Identifier
+/resources/source/*.zip
+/resources/source/*.mcaddon
+
+# --- Python (FSG generator tooling, if any) ---
+/.venv/
+/venv/
+__pycache__/
+*.pyc
+*.pyo

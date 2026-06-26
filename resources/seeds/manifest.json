@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "generated_at": "2026-06-23T23:19:30Z",
+  "source": "Fsg-Generator-MCBE-main (ranked-*.json in v1)",
+  "tool_version": "seedgen/0.1.0",
+  "categories": [
+    {
+      "id": "bastion",
+      "count": 22502,
+      "source_file": "ranked-bastion.json",
+      "first_seed": "5829755118",
+      "last_seed": "35699862655551599"
+    },
+    {
+      "id": "desert_temple",
+      "count": 7961,
+      "source_file": "ranked-desert-temple.json",
+      "first_seed": "-2147046786",
+      "last_seed": "2147078860"
+    },
+    {
+      "id": "ruined_portal",
+      "count": 23371,
+      "source_file": "ranked-ruined-portal.json",
+      "first_seed": "-2146349543",
+      "last_seed": "2147384460"
+    },
+    {
+      "id": "stronghold",
+      "count": 6225,
+      "source_file": "ranked-stronghold.json",
+      "first_seed": "-2147042280",
+      "last_seed": "2147390343"
+    },
+    {
+      "id": "village",
+      "count": 16096,
+      "source_file": "ranked-village.json",
+      "first_seed": "-2147042280",
+      "last_seed": "2147308040"
+    },
+    {
+      "id": "warped",
+      "count": 12085,
+      "source_file": "ranked-warped.json",
+      "first_seed": "-9223372028263525861",
+      "last_seed": "9223372032560635899"
+    }
+  ],
+  "notes": "Only filenames mapped in seedgen.categoryMap are extracted. Unmapped files (classic.json, dt.json, packshvil.json) are reserved for manual review."
+}
