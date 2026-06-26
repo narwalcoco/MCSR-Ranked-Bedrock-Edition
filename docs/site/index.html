@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="synthwave">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCSR Ranked Bedrock — A Beginner's Tour</title>
+  <meta name="description" content="A friendly, beginner-friendly walkthrough of the MCSR Ranked Bedrock project: the architecture, every file, every Go tool, and the roadmap." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>" />
+  <script defer src="app.js"></script>
+</head>
+<body>
+
+<!-- =============== TOP NAV =============== -->
+<header class="topnav" id="topnav">
+  <div class="topnav__inner container">
+    <a href="#hero" class="topnav__brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <defs><linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#00d9ff"/><stop offset="1" stop-color="#ff5dc8"/>
+        </linearGradient></defs>
+        <path d="M16 2 L29 9 V22 L16 30 L3 22 V9 Z" fill="url(#brandGrad)" opacity="0.85" />
+        <path d="M16 8 L23 11.5 V18 L16 22 L9 18 V11.5 Z" fill="#0a0820" />
+        <circle cx="16" cy="15" r="2.4" fill="url(#brandGrad)" />
+      </svg>
+      <span class="brand-text"><strong>MCSR</strong> Ranked BE</span>
+    </a>
+    <nav class="topnav__links" aria-label="Primary">
+      <a href="#hero"  class="navlink">Home</a>
+      <a href="#tools" class="navlink">Go Tools</a>
+      <a href="#bigpicture" class="navlink">Big Picture</a>
+      <a href="#architecture" class="navlink">Architecture</a>
+      <a href="#filemap" class="navlink">Project Map</a>
+      <a href="#walkthrough" class="navlink">Files</a>
+      <a href="#phases" class="navlink">Phases</a>
+      <a href="#tryit" class="navlink">Try It</a>
+      <a href="#glossary" class="navlink">Glossary</a>
+    </nav>
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button class="theme-btn is-active" data-theme-set="synthwave" title="Synthwave (dark)" aria-label="Synthwave theme">🌌</button>
+      <button class="theme-btn" data-theme-set="lab"      title="Lab (light)"      aria-label="Lab theme">🔬</button>
+      <button class="theme-btn" data-theme-set="neon"     title="Neon Nights"      aria-label="Neon Nights theme">⚡</button>
+    </div>
+  </div>
+  <div class="topnav__progress" id="scrollProgress" aria-hidden="true"></div>
+</header>
+
+<!-- =============== HERO =============== -->
+<section id="hero" class="hero">
+  <div class="hero__bg" aria-hidden="true">
+    <div class="hero__grid"></div>
+    <div class="hero__glow hero__glow--cyan"></div>
+    <div class="hero__glow hero__glow--magenta"></div>
+  </div>
+
+  <div class="container hero__content">
+    <span class="hero__chip">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z"/>
+      </svg>
+      A Friendly Tour
+    </span>
+    <h1 class="hero__title">
+      <span class="grad-text">MCSR Ranked</span>
+      <span class="hero__title-line">Bedrock Edition</span>
+    </h1>
+    <p class="hero__lede">
+      A step-by-step, beginner-friendly walkthrough of the project — what the files do, what the Go commands mean, and how the whole system fits together.
+      Built for people who are learning as they go.
+    </p>
+    <div class="hero__ctas">
+      <a href="#tools" class="btn btn--primary">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 1 0 1.4l-7 7a1 1 0 0 1-1.4-1.4l7-7a1 1 0 0 1 1.4 0Z"/><path d="M20 10V4h-6"/><path d="M4 14v6h6"/></svg>
+        Open the Go Tools Glossary
+      </a>
+      <a href="#walkthrough" class="btn btn--ghost">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        Read the File Tour
+      </a>
+    </div>
+    <div class="hero__stats" aria-label="Project at a glance">
+      <div class="stat"><span class="stat__num">25</span><span class="stat__label">Go source files</span></div>
+      <div class="stat"><span class="stat__num">4</span><span class="stat__label">SQL migrations</span></div>
+      <div class="stat"><span class="stat__num">88,240</span><span class="stat__label">ranked seeds</span></div>
+      <div class="stat"><span class="stat__num">2/11</span><span class="stat__label">phases shipped</span></div>
+    </div>
+  </div>
+
+  <a href="#tools" class="hero__scrollhint" aria-label="Scroll to content">
+    <span></span>
+  </a>
+</section>
+
+<!-- =============== TOOLS GLOSSARY =============== -->
+<section id="tools" class="section">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">🧰 First Things First</span>
+      <h2 class="section__title">The Go Tools Glossary</h2>
+      <p class="section__lede">
+        Before anything else, let's get comfortable with the commands and tools you'll see in this project. Every one of these is run from your terminal (the black-and-white text window).
+        Think of this section as your cheat sheet — you can come back to it any time.
+      </p>
+    </header>
+
+    <div class="toolgrid">
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="cyan">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l-6-6 6-6"/><path d="M15 6l6 6-6 6"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">go build</h3>
+            <p class="toolcard__tagline">Turns source code into a runnable program</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>What it does:</strong> Go source files end in <code>.go</code>, but your computer can't run them directly.
+            Running <code class="inline-cmd">go build</code> reads your <code>.go</code> files, checks them against the
+            <em>Go language rules</em>, and produces a single executable file (a "binary") — for example
+            <code>bin/queen</code> on macOS/Linux or <code>queen.exe</code> on Windows.
+          </p>
+          <p>
+            <strong>Why we care:</strong> if something is syntactically wrong, Go will tell you <em>before</em>
+            you try to run it. This catches typos, missing imports, and broken type usage in seconds.
+          </p>
+          <p>
+            <strong>The flag we use:</strong> <code class="inline-cmd">-o bin/queen</code> tells Go <em>"put the resulting
+            binary at <code>bin/queen</code>"</em> instead of the default location.
+          </p>
+          <pre class="code"><code>go build -o bin/queen ./pkg/queen</code></pre>
+          <p class="small">
+            Read it like English: <em>"Hey Go — turn everything under <code>./pkg/queen</code> into an executable file called
+            <code>bin/queen</code>."</em>
+          </p>
+        </div>
+      </article>
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="magenta">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">go vet</h3>
+            <p class="toolcard__tagline">A spell-checker for your code</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>What it does:</strong> Imagine writing an essay — a spell-checker catches typos your eye misses.
+            <code class="inline-cmd">go vet</code> is the same idea for code. It scans your files looking for
+            patterns that are technically <em>valid</em> Go, but are almost always <em>bugs</em>: shadow variables,
+            unreachable code, suspicious printf format strings, and the like.
+          </p>
+          <p>
+            <strong>Important:</strong> <code>go vet</code> does <em>not</em> run your code. It only reads it.
+            That means it's safe and very fast — a few hundred milliseconds even for big projects.
+          </p>
+          <p>
+            <strong>The <code>./...</code> symbol you keep seeing:</strong> this is shorthand for
+            <em>"this folder, and every subfolder underneath it."</em> So <code class="inline-cmd">go vet ./...</code>
+            means "vet the entire project, all packages."
+          </p>
+          <pre class="code"><code>go vet ./...</code></pre>
+          <p class="small">
+            Read it like English: <em>"Scan every Go file in this project for suspicious patterns."</em>
+          </p>
+        </div>
+      </article>
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="amber">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">go test ./...</h3>
+            <p class="toolcard__tagline">Runs your automated tests</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>What it does:</strong> any file ending in <code>_test.go</code> contains automated tests.
+            These tests are tiny programs that verify a piece of your code behaves correctly.
+            <code class="inline-cmd">go test</code> runs all of them and prints a green <em>PASS</em> or red
+            <em>FAIL</em> for each.
+          </p>
+          <p>
+            <strong>How to read a test file:</strong>
+          </p>
+          <pre class="code"><code>// filename: parser_test.go
+func TestParseValidInput(t *testing.T) {
+    got := Parse("hello world")
+    want := "Hello, World!"
+    if got != want {
+        t.Errorf("got %q, want %q", got, want)
+    }
+}</code></pre>
+          <p>
+            The test says: <em>"Given the input <code>hello world</code>, the function <code>Parse</code> should return
+            <code>Hello, World!</code>. If it doesn't, the test fails and tells us what went wrong."</em>
+          </p>
+          <p>
+            <strong>Why it matters:</strong> with tests, you can change code confidently — if you break something,
+            the test will tell you immediately instead of discovering it later in production.
+          </p>
+        </div>
+      </article>
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="violet">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">go.mod &amp; go.sum</h3>
+            <p class="toolcard__tagline">Your project's "package list"</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>go.mod:</strong> the small file that describes your project's name, the Go version it needs,
+            and the <em>dependencies</em> (third-party packages) it uses. Think of it like the
+            <code>ingredients</code> list on a recipe card.
+          </p>
+          <pre class="code"><code>// go.mod
+module github.com/mcsr-ranked-bedrock
+go 1.25.0
+require modernc.org/sqlite v1.53.4</code></pre>
+          <p>
+            <strong>go.sum:</strong> an auto-generated file that contains cryptographic fingerprints for
+            <em>every</em> dependency file. It's how Go proves the code it downloaded is exactly the code the project expects,
+            and nothing was tampered with along the way. You almost never edit this by hand.
+          </p>
+          <p>
+            <strong>Analogy:</strong> if <code>go.mod</code> is the recipe card, <code>go.sum</code> is the
+            tamper-evident seal on every ingredient.
+          </p>
+        </div>
+      </article>
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="cyan">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">typecheck</h3>
+            <p class="toolcard__tagline">"Will this compile?" without producing a binary</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>What it means:</strong> Go is a <em>statically-typed</em> language. Every variable, function
+            argument, and return value has a <em>type</em> (a <code>string</code> is text, an <code>int</code> is a whole number,
+            a <code>time.Time</code> is a moment in time, etc.). The "typecheck" step is when Go verifies all your
+            types line up — you passed a <code>string</code> where the function expected an <code>int</code>?
+            Typecheck failed.
+          </p>
+          <p>
+            <strong>In our project:</strong> we use <code class="inline-cmd">go build ./...</code> as a typecheck
+            in our Makefile. (When you only want typecheck without producing a real binary, you can use
+            <code class="inline-cmd">go build -o /dev/null ./...</code> — but most people just run <code>go build</code>
+            and ignore the produced binary if they don't need it.)
+          </p>
+          <p class="small">
+            <strong>Why it matters:</strong> bugs that a "typecheck" catches would otherwise crash your program
+            at runtime, often hours later, in production. Catching them up-front is enormously valuable.
+          </p>
+        </div>
+      </article>
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="magenta">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 11v6c0 1.7 4 3 9 3s9-1.3 9-3v-6"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">SQLite (and "pure Go")</h3>
+            <p class="toolcard__tagline">A tiny, file-based database</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>SQLite</strong> is a database that lives in <em>one file on disk</em>. There's no separate
+            database server to install or run. That makes it perfect for self-contained apps like ours —
+            the entire match history fits in a single file you can copy, e-mail, or back up trivially.
+          </p>
+          <p>
+            <strong>Traditional SQLite drivers</strong> in Go are "CGo" — they call into a C library. That means:
+          </p>
+          <ul>
+            <li>You need a C compiler installed to build the Go binary.</li>
+            <li>Cross-compiling for other operating systems is painful.</li>
+          </ul>
+          <p>
+            <strong>modernc.org/sqlite</strong> is what we use instead — it's a 100% Go translation of the
+            SQLite C source. It's slower than the C version, but it removes the Go-to-C boundary entirely.
+            For us, that's worth it: simple builds, no toolchain dependencies.
+          </p>
+        </div>
+      </article>
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="amber">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v8"/><path d="m5 9 7-7 7 7"/><path d="M19 21H5"/><path d="m9 17-2 4"/><path d="m15 17 2 4"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">git &amp; SSH push</h3>
+            <p class="toolcard__tagline">Saving and sharing your work</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>git</strong> is a version control system — it tracks every change you make to your code,
+            so you can undo mistakes, see history, and collaborate with others. A "repo" (short for repository)
+            is a folder whose changes git is tracking.
+          </p>
+          <p>
+            <strong>The flow:</strong>
+          </p>
+          <ol>
+            <li><code class="inline-cmd">git add -A</code> — Stage every changed file to be saved.</li>
+            <li><code class="inline-cmd">git commit -m "..."</code> — Save a snapshot with a short message describing the change.</li>
+            <li><code class="inline-cmd">git push</code> — Upload that snapshot to a remote server (in our case, GitHub).</li>
+          </ol>
+          <p>
+            <strong>SSH</strong> is a way to authenticate to a remote server without typing a password — it uses
+            a pair of cryptographic keys (a "private" key that stays on your computer and a "public" key that
+            GitHub stores). When you run <code class="inline-cmd">git push git@github.com:...</code>, SSH proves
+            it's really you.
+          </p>
+        </div>
+      </article>
+
+      <article class="toolcard">
+        <header class="toolcard__head">
+          <div class="toolcard__icon" data-hue="violet">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <div>
+            <h3 class="toolcard__name">HTTP / REST / JSON</h3>
+            <p class="toolcard__tagline">How programs talk to each other</p>
+          </div>
+        </header>
+        <div class="toolcard__body">
+          <p>
+            <strong>HTTP</strong> is the protocol your browser uses to fetch web pages. Our matchmaking service
+            (<em>the queen</em>) listens for HTTP requests the same way a web server does — but instead of returning
+            HTML for a browser, it returns <em>JSON</em> for another program (the worker) to read.
+          </p>
+          <p>
+            <strong>REST</strong> is a style of using HTTP where each URL represents a "resource":
+          </p>
+          <ul>
+            <li><code class="inline-cmd">POST /queue</code> — "join the matchmaking queue"</li>
+            <li><code class="inline-cmd">GET /me</code> — "tell me about myself"</li>
+            <li><code class="inline-cmd">GET /matches/42</code> — "give me match #42"</li>
+          </ul>
+          <p>
+            <strong>JSON</strong> (JavaScript Object Notation) is a text format for structured data. It looks like:
+          </p>
+          <pre class="code"><code>{
+  "xuid":  "alice-101",
+  "elo":   1200,
+  "match": { "id": 1, "seed": "..." }
+}</code></pre>
+          <p class="small">
+            Almost every computer-to-computer API in the world uses JSON. Easy for humans to read, easy for machines to parse.
+          </p>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- =============== BIG PICTURE =============== -->
+<section id="bigpicture" class="section section--alt">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">🎯 What we're building</span>
+      <h2 class="section__title">The Big Picture</h2>
+      <p class="section__lede">
+        Before we dive into files, let's talk about what this project actually <em>does</em> in plain English.
+        Once you understand this, every file will make sense.
+      </p>
+    </header>
+
+    <div class="biggrid">
+      <div class="bigcard">
+        <h3>🏃 What's MCSR?</h3>
+        <p>
+          <strong>MCSR</strong> stands for <em>Minecraft Speedrunning Community Ranked</em>. Speedrunning
+          is finishing a game as fast as possible. In Minecraft, that's usually beating the game (killing
+          the Ender Dragon) while the game records exactly what happened and when.
+        </p>
+        <p>
+          "Ranked" means the speedrunning community wanted to compare players fairly — like a chess rating —
+          so two players of similar skill are paired against each other.
+        </p>
+      </div>
+
+      <div class="bigcard">
+        <h3>🛏 What's "Bedrock"?</h3>
+        <p>
+          Minecraft comes in two main editions: <strong>Java Edition</strong> (the original, runs on PCs and Macs)
+          and <strong>Bedrock Edition</strong> (cross-platform — phones, consoles, and Windows 10/11).
+          They are different codebases with different mechanics, so they have separate ranked ladders.
+        </p>
+        <p>
+          This project — <em>MCSR Ranked Bedrock Edition</em> — is the ranked ladder for the Bedrock community.
+          The Java equivalent already exists; this fills the gap.
+        </p>
+      </div>
+
+      <div class="bigcard">
+        <h3>🧩 What does this codebase do?</h3>
+        <p>
+          It is the <strong>central matchmaking service</strong> that powers that ranked ladder.
+          When two players both want to play a ranked match, this service:
+        </p>
+        <ol>
+          <li>Picks the matching pair based on rating.</li>
+          <li>Picks a fair, surprise seed (the specific world layout they'll race in).</li>
+          <li>Sends both players the match details so their games can launch automatically with identical worlds.</li>
+          <li>Watches for the result (who won, who lost, was there a disconnect?) and updates each player's rating.</li>
+        </ol>
+      </div>
+
+      <div class="bigcard">
+        <h3>🪪 Phases so far</h3>
+        <p>
+          We are at <strong>phase 2 of 11</strong>. The foundation is built.
+          What's left is mostly connecting it to real Minecraft server processes, real Xbox Live login,
+          and shipping nice GUIs (Tauri launcher + Bedrock add-on) on top.
+        </p>
+        <p>
+          See the <a href="#phases">Phases</a> section below for the full roadmap.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== ARCHITECTURE =============== -->
+<section id="architecture" class="section">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">🏗 How the pieces talk</span>
+      <h2 class="section__title">The Architecture</h2>
+      <p class="section__lede">
+        We have one central <em>queen</em> service running on a server, and a tiny <em>worker</em>
+        helper running on each player's machine. They communicate over HTTP and a small set of message types.
+      </p>
+    </header>
+
+    <div class="archdiagram" aria-label="Architecture diagram">
+      <svg viewBox="0 0 1000 380" role="img" aria-label="Queen service connects to multiple Workers on player machines. Each worker launches a Bedrock Dedicated Server instance.">
+        <defs>
+          <linearGradient id="archQueenGrad" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#00d9ff"/><stop offset="1" stop-color="#5b8def"/>
+          </linearGradient>
+          <linearGradient id="archWorkerGrad" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#ff5dc8"/><stop offset="1" stop-color="#8b5cf6"/>
+          </linearGradient>
+          <linearGradient id="archBdsGrad" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#84cc16"/>
+          </linearGradient>
+          <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- Queen -->
+        <g class="arch-node" transform="translate(60,80)">
+          <rect width="220" height="220" rx="22" fill="url(#archQueenGrad)" opacity="0.95"/>
+          <text x="110" y="55" text-anchor="middle" font-size="42" fill="#0a0820">👑</text>
+          <text x="110" y="100" text-anchor="middle" font-size="22" font-weight="700" fill="#0a0820">The Queen</text>
+          <text x="110" y="130" text-anchor="middle" font-size="13" fill="#0a0820">Matchmaking + Ratings</text>
+          <text x="110" y="155" text-anchor="middle" font-size="12" fill="#0a0820" opacity="0.85">Players • Queue • Matches</text>
+          <text x="110" y="175" text-anchor="middle" font-size="12" fill="#0a0820" opacity="0.85">Seeds • Anti-Cheat • Logs</text>
+        </g>
+
+        <!-- Connections -->
+        <g stroke="currentColor" stroke-width="2.5" fill="none" marker-end="url(#arr)" class="arch-line">
+          <path d="M280 130 C 360 130, 380 110, 460 110"/>
+          <path d="M280 260 C 360 260, 380 280, 460 280"/>
+        </g>
+
+        <!-- Worker 1 -->
+        <g class="arch-node" transform="translate(460,40)">
+          <rect width="220" height="160" rx="22" fill="url(#archWorkerGrad)" opacity="0.95"/>
+          <text x="110" y="42" text-anchor="middle" font-size="34" fill="#0a0820">🤖</text>
+          <text x="110" y="78" text-anchor="middle" font-size="18" font-weight="700" fill="#0a0820">Worker (Alice)</text>
+          <text x="110" y="103" text-anchor="middle" font-size="12" fill="#0a0820" opacity="0.85">Runs on Alice's machine</text>
+          <text x="110" y="125" text-anchor="middle" font-size="12" fill="#0a0820" opacity="0.85">launches BDS • reports events</text>
+        </g>
+
+        <!-- Worker 2 -->
+        <g class="arch-node" transform="translate(460,210)">
+          <rect width="220" height="160" rx="22" fill="url(#archWorkerGrad)" opacity="0.95"/>
+          <text x="110" y="42" text-anchor="middle" font-size="34" fill="#0a0820">🤖</text>
+          <text x="110" y="78" text-anchor="middle" font-size="18" font-weight="700" fill="#0a0820">Worker (Bob)</text>
+          <text x="110" y="103" text-anchor="middle" font-size="12" fill="#0a0820" opacity="0.85">Runs on Bob's machine</text>
+          <text x="110" y="125" text-anchor="middle" font-size="12" fill="#0a0820" opacity="0.85">launches BDS • reports events</text>
+        </g>
+
+        <!-- Connections from Workers to BDS -->
+        <g stroke="currentColor" stroke-width="2" fill="none" marker-end="url(#arr)" class="arch-line">
+          <path d="M680 120 C 760 120, 780 120, 830 120"/>
+          <path d="M680 290 C 760 290, 780 290, 830 290"/>
+        </g>
+
+        <!-- BDS -->
+        <g class="arch-node" transform="translate(830,40)">
+          <rect width="160" height="160" rx="20" fill="url(#archBdsGrad)" opacity="0.95"/>
+          <text x="80" y="45" text-anchor="middle" font-size="34" fill="#0a0820">🌍</text>
+          <text x="80" y="80" text-anchor="middle" font-size="16" font-weight="700" fill="#0a0820">BDS</text>
+          <text x="80" y="105" text-anchor="middle" font-size="11" fill="#0a0820" opacity="0.85">Bedrock Dedicated</text>
+          <text x="80" y="125" text-anchor="middle" font-size="11" fill="#0a0820" opacity="0.85">Server (Alice)</text>
+        </g>
+
+        <g class="arch-node" transform="translate(830,210)">
+          <rect width="160" height="160" rx="20" fill="url(#archBdsGrad)" opacity="0.95"/>
+          <text x="80" y="45" text-anchor="middle" font-size="34" fill="#0a0820">🌍</text>
+          <text x="80" y="80" text-anchor="middle" font-size="16" font-weight="700" fill="#0a0820">BDS</text>
+          <text x="80" y="105" text-anchor="middle" font-size="11" fill="#0a0820" opacity="0.85">Bedrock Dedicated</text>
+          <text x="80" y="125" text-anchor="middle" font-size="11" fill="#0a0820" opacity="0.85">Server (Bob)</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="archlegend">
+      <div class="legend-item">
+        <span class="legend-chip" style="background: linear-gradient(135deg,#00d9ff,#5b8def)"></span>
+        <div>
+          <strong>Queen</strong> — central matchmaking, ratings, seeds, anti-cheat. One instance, public-internet facing.
+        </div>
+      </div>
+      <div class="legend-item">
+        <span class="legend-chip" style="background: linear-gradient(135deg,#ff5dc8,#8b5cf6)"></span>
+        <div>
+          <strong>Worker</strong> — small helper app on every player's machine. Connects to the queen, launches BDS locally, streams events back.
+        </div>
+      </div>
+      <div class="legend-item">
+        <span class="legend-chip" style="background: linear-gradient(135deg,#10b981,#84cc16)"></span>
+        <div>
+          <strong>BDS</strong> — the actual Minecraft Bedrock server software. Spawns an identical world for both players using the seed the queen picked.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== FILE MAP =============== -->
+<section id="filemap" class="section section--alt">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">🗺️ Where everything lives</span>
+      <h2 class="section__title">The Project Map</h2>
+      <p class="section__lede">
+        Click any file or folder to see what it does. The tree below mirrors the real layout on disk.
+      </p>
+    </header>
+
+    <ul class="filetree" role="tree" aria-label="Project directory tree">
+
+      <li class="ft-folder" role="treeitem" aria-expanded="true">
+        <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+        <span class="ft-icon">📁</span><span class="ft-name">cmd/</span>
+        <span class="ft-desc">Entry-point programs. Each subfolder is one runnable command.</span>
+        <ul role="group">
+          <li class="ft-file" role="treeitem">
+            <span class="ft-icon">⚙️</span>
+            <button class="ft-detail" data-file="cmd/seedgen/main.go">cmd/seedgen/main.go</button>
+            <span class="ft-desc">Build-time CLI: reads raw FSG seed files, organizes them into categories, writes the manifest.</span>
+          </li>
+        </ul>
+      </li>
+
+      <li class="ft-folder" role="treeitem" aria-expanded="true">
+        <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+        <span class="ft-icon">📁</span><span class="ft-name">pkg/shared/</span>
+        <span class="ft-desc">Code reused by both <em>queen</em> and <em>worker</em>.</span>
+        <ul role="group">
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">logging/</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem">
+                <span class="ft-icon">📄</span>
+                <button class="ft-detail" data-file="pkg/shared/logging/logging.go">logging.go</button>
+                <span class="ft-desc">One place that sets up Go's "structured" logger (slog). Every service calls <code>logging.Setup(...)</code> at startup.</span>
+              </li>
+            </ul>
+          </li>
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">seeds/</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem">
+                <span class="ft-icon">📄</span>
+                <button class="ft-detail" data-file="pkg/shared/seeds/manifest.go">manifest.go</button>
+                <span class="ft-desc">Loads <code>resources/seeds/manifest.json</code> into typed Go structs.</span>
+              </li>
+              <li class="ft-file" role="treeitem">
+                <span class="ft-icon">📄</span>
+                <button class="ft-detail" data-file="pkg/shared/seeds/internal.go">internal.go</button>
+                <span class="ft-desc">The dedup logic — filtering overlapping seeds, bucketing into categories, picking one at random.</span>
+              </li>
+              <li class="ft-file" role="treeitem">
+                <span class="ft-icon">🧪</span>
+                <button class="ft-detail" data-file="pkg/shared/seeds/manifest_test.go">manifest_test.go</button>
+                <span class="ft-desc">9 unit tests for the seed pipeline — guards against regressions.</span>
+              </li>
+            </ul>
+          </li>
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">version/</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem">
+                <span class="ft-icon">📄</span>
+                <button class="ft-detail" data-file="pkg/shared/version/version.go">version.go</button>
+                <span class="ft-desc">Stamps each binary with its version, commit SHA, and build time so we always know what's deployed.</span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+
+      <li class="ft-folder" role="treeitem" aria-expanded="true">
+        <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+        <span class="ft-icon">📁</span><span class="ft-name">pkg/queen/</span>
+        <span class="ft-desc">The matchmaking service. This is what runs on the central server.</span>
+        <ul role="group">
+          <li class="ft-file" role="treeitem">
+            <span class="ft-icon">🚀</span>
+            <button class="ft-detail" data-file="pkg/queen/main.go">main.go</button>
+            <span class="ft-desc">The queen's entry point: parse flags, read config, open the database, start the HTTP server.</span>
+          </li>
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">internal/config/</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem">
+                <span class="ft-icon">📄</span>
+                <button class="ft-detail" data-file="pkg/queen/internal/config/config.go">config.go</button>
+                <span class="ft-desc">Loads every setting the queen needs (HTTP address, database path, seed manifest path, log level) from flags and environment variables.</span>
+              </li>
+            </ul>
+          </li>
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">internal/db/</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem">
+                <span class="ft-icon">📄</span>
+                <button class="ft-detail" data-file="pkg/queen/internal/db/db.go">db.go</button>
+                <span class="ft-desc">Opens the database file, runs the migrations so the schema is always up-to-date, then gives us a handle to query against.</span>
+              </li>
+              <li class="ft-folder" role="treeitem" aria-expanded="true">
+                <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+                <span class="ft-icon">📁</span><span class="ft-name">migrations/</span>
+                <ul role="group">
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">🗃️</span><button class="ft-detail" data-file="migrations/0001_initial_schema.sql">0001_initial_schema.sql</button><span class="ft-desc">A bookkeeping table for tracking which migrations have been applied.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">🗃️</span><button class="ft-detail" data-file="migrations/0002_players.sql">0002_players.sql</button><span class="ft-desc">Players table — Xbox XUID, gamertag, rating (Elo), "provisional" flag.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">🗃️</span><button class="ft-detail" data-file="migrations/0003_queue_entries.sql">0003_queue_entries.sql</button><span class="ft-desc">One row per player currently waiting for matchmaking.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">🗃️</span><button class="ft-detail" data-file="migrations/0004_matches.sql">0004_matches.sql</button><span class="ft-desc">One row per match that has been started, plus its seed, status, and timestamps.</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">internal/store/</span>
+            <span class="ft-desc">The "repository layer" — every SQL query lives here, nowhere else.</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/store/store.go">store.go</button><span class="ft-desc">Wires the repositories together and exposes them as one package.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/store/players.go">players.go</button><span class="ft-desc">Upsert / fetch for <strong>players</strong>. Sets them at 1200 Elo and marks them provisional on first sight.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/store/queue.go">queue.go</button><span class="ft-desc">Join / leave / list for the matchmaking <strong>queue</strong>. Idempotent join so double-tap doesn't break anything.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/store/matches.go">matches.go</button><span class="ft-desc">Create + fetch for <strong>matches</strong>. The "create" call is transactional — match row + flip both queue rows to <code>matched</code> happens atomically.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/store/scan_time.go">scan_time.go</button><span class="ft-desc">A defensive helper that handles the time column — protects us from a quirk of our pure-Go SQLite driver returning timestamps as either <code>int64</code> or digit strings.</span></li>
+            </ul>
+          </li>
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">internal/matchmaker/</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/matchmaker/matchmaker.go">matchmaker.go</button><span class="ft-desc">The brain of matchmaking — pairs the two oldest waiting players every tick, also on-demand when someone joins the queue so people don't wait.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/matchmaker/rand.go">rand.go</button><span class="ft-desc">Tiny wrapper around Go's crypto-random int source — exact source for picking seeds and player pairings.</span></li>
+            </ul>
+          </li>
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">internal/api/</span>
+            <span class="ft-desc">HTTP handlers — one file per concern. The router wires them up.</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/router.go">router.go</button><span class="ft-desc">Builds the URL → handler map.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/health.go">health.go</button><span class="ft-desc"><code>GET /health</code> — liveness probe. Also reports queue depth.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/seeds.go">seeds.go</button><span class="ft-desc"><code>GET /seeds/categories</code> — returns the category list and counts.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/auth.go">auth.go</button><span class="ft-desc">Dev-mode "who is calling?" — reads <code>X-Player-XUID</code> + <code>X-Player-Gamertag</code> headers (Xbox OAuth lands in Phase 7).</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/helpers.go">helpers.go</button><span class="ft-desc">Tiny shared helpers — JSON encode/decode, error → HTTP-status mapping.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/players.go">players.go</button><span class="ft-desc"><code>POST /players</code> + <code>GET /players/{xuid}</code> — create and look up players.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/queue.go">queue.go</button><span class="ft-desc">Join, leave, list queue. The act of joining also nudges the matchmaker so you get paired without waiting for the next tick.</span></li>
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/queen/internal/api/matches.go">matches.go</button><span class="ft-desc">Look up matches and "what does the calling player see about themselves right now" (<code>/me</code>, <code>/me/match</code>).</span></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+
+      <li class="ft-folder" role="treeitem" aria-expanded="true">
+        <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+        <span class="ft-icon">📁</span><span class="ft-name">pkg/worker/</span>
+        <span class="ft-desc">The per-player helper. Currently a placeholder — Phase 3 builds it for real.</span>
+        <ul role="group">
+          <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><button class="ft-detail" data-file="pkg/worker/main.go">main.go</button><span class="ft-desc">Stub that will eventually launch BDS locally and stream events to the queen.</span></li>
+        </ul>
+      </li>
+
+      <li class="ft-folder" role="treeitem" aria-expanded="true">
+        <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+        <span class="ft-icon">📁</span><span class="ft-name">resources/</span>
+        <ul role="group">
+          <li class="ft-folder" role="treeitem" aria-expanded="true">
+            <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+            <span class="ft-icon">📁</span><span class="ft-name">seeds/</span>
+            <ul role="group">
+              <li class="ft-file" role="treeitem"><span class="ft-icon">📋</span><span class="ft-name">manifest.json</span><span class="ft-desc">Index of every ranked seed in every category. Small enough to load at startup; used by the matchmaker.</span></li>
+              <li class="ft-folder" role="treeitem" aria-expanded="true">
+                <button class="ft-toggle" aria-label="Toggle folder">▾</button>
+                <span class="ft-icon">📁</span><span class="ft-name">categories/</span>
+                <ul role="group">
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><span class="ft-name">bastion.json</span><span class="ft-desc">~22,500 seeds.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><span class="ft-name">ruined_portal.json</span><span class="ft-desc">~23,000 seeds.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><span class="ft-name">village.json</span><span class="ft-desc">~16,000 seeds.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><span class="ft-name">warped.json</span><span class="ft-desc">~12,000 seeds.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><span class="ft-name">desert_temple.json</span><span class="ft-desc">~7,900 seeds.</span></li>
+                  <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><span class="ft-name">stronghold.json</span><span class="ft-desc">~6,200 seeds.</span></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li class="ft-folder" role="treeitem"><button class="ft-toggle" aria-label="Toggle folder">▸</button><span class="ft-icon">📁</span><span class="ft-name">templates/, packs/, bds/</span><span class="ft-desc">Reserved for later phases (world templates, resource packs, BDS configs).</span></li>
+          <li class="ft-folder" role="treeitem"><button class="ft-toggle" aria-label="Toggle folder">▸</button><span class="ft-icon">📁</span><span class="ft-name">source/</span><span class="ft-desc">Source archives (git-ignored).</span></li>
+        </ul>
+      </li>
+
+      <li class="ft-file" role="treeitem"><span class="ft-icon">📄</span><span class="ft-name">plan.md</span><span class="ft-desc">The 11-phase roadmap, with the architectural diagram. Read this top-to-bottom for the long view.</span></li>
+      <li class="ft-file" role="treeitem"><span class="ft-icon">🛠️</span><span class="ft-name">Makefile</span><span class="ft-desc">Build/run/typecheck shortcuts: <code>make build</code>, <code>make run-queen</code>, <code>make typecheck</code>, <code>make clean</code>.</span></li>
+      <li class="ft-file" role="treeitem"><span class="ft-icon">⚙️</span><span class="ft-name">.env.example</span><span class="ft-desc">Every <code>MCSR_*</code> environment variable the queen reads. Good reference for "what knobs does the service have?"</span></li>
+      <li class="ft-file" role="treeitem"><span class="ft-icon">📦</span><span class="ft-name">go.mod / go.sum</span><span class="ft-desc">The project's package list and integrity fingerprints.</span></li>
+    </ul>
+
+    <!-- File-detail modal target -->
+    <div id="file-detail" class="file-modal" hidden></div>
+  </div>
+</section>
+
+<!-- =============== WALKTHROUGH =============== -->
+<section id="walkthrough" class="section">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">🧭 File-by-File</span>
+      <h2 class="section__title">The Walkthrough</h2>
+      <p class="section__lede">
+        For each file, here's what it does, the key types and functions, and why it's structured the way it is.
+        Read top-to-bottom for the deep dive, or jump in wherever you're curious.
+      </p>
+    </header>
+
+    <div class="walkgrid">
+
+      <article class="walk" id="cmd-seedgen">
+        <header class="walk__head"><span class="walk__file">cmd/seedgen/main.go</span><span class="walk__role">Tooling — build-time only</span></header>
+        <p>
+          This isn't a server. It's a one-shot program you run <em>once</em> (or whenever the upstream seed list changes).
+          It reads raw seed files from a build-time source bundle, runs them through
+          <code>pkg/shared/seeds</code> for dedup and categorization, then writes both
+          <code>resources/seeds/categories/*.json</code> and <code>resources/seeds/manifest.json</code>.
+          The queen never runs this — it just consumes the outputs.
+        </p>
+        <p><strong>Key idea:</strong> the seed picking logic is the same code path used in production, so if the pipeline breaks, it breaks at build time (loud) instead of when matchmaking happens (silent disaster).</p>
+      </article>
+
+      <article class="walk" id="pkg-shared-seeds">
+        <header class="walk__head"><span class="walk__file">pkg/shared/seeds/*</span><span class="walk__role">Shared library</span></header>
+        <p>
+          The seed pipeline, isolated so it's easy to unit-test and reused by both the seed generator and the
+          the queen at runtime.
+        </p>
+        <ul>
+          <li><strong><code>manifest.go</code></strong> — turns the JSON manifest into typed Go structs (<code>Manifest</code>, <code>Category</code>, <code>Seed</code>) and exposes a <code>Load(path)</code> helper.</li>
+          <li><strong><code>internal.go</code></strong> — the actual deduplication logic. Detects near-mirror seeds (they have the same first structure dig), buckets survivors by category (lone structure near <code>0,0</code> = its type), and <code>Pick(category, rng)</code> returns a random one.</li>
+          <li><strong><code>manifest_test.go</code></strong> — 9 tests covering dedup correctness, category bucketing, deterministic picks, and error cases.</li>
+        </ul>
+      </article>
+
+      <article class="walk" id="pkg-queen-main">
+        <header class="walk__head"><span class="walk__file">pkg/queen/main.go</span><span class="walk__role">Queen entry point</span></header>
+        <p>
+          When you run <code>./bin/queen</code>, this is the file that runs first. It does five things, in order:
+        </p>
+        <ol>
+          <li>Parse command-line flags (<code>--addr</code>, <code>--db</code>, <code>--match-interval</code>).</li>
+          <li>Load config (overlaid on top of the env vars from <code>internal/config</code>).</li>
+          <li>Set up the logger.</li>
+          <li>Open the database and apply migrations.</li>
+          <li>Start the HTTP server and the matchmaker tick. Wait here forever.</li>
+        </ol>
+        <p>
+          The boring-but-essential pattern: every service has a <code>main.go</code> that's just plumbing. The interesting logic lives in <code>internal/</code>.
+        </p>
+      </article>
+
+      <article class="walk" id="pkg-queen-config">
+        <header class="walk__head"><span class="walk__file">pkg/queen/internal/config/config.go</span><span class="walk__role">Config loader</span></header>
+        <p>
+          Reads all the configuration the queen needs. The pattern is "12-factor": config comes from
+          environment variables, with command-line flags overriding them. So you can set <code>MCSR_HTTP_ADDR=:9000</code>
+          in your shell, or pass <code>--addr=:9000</code> — whichever you prefer.
+        </p>
+        <p>
+          Loaded once at startup into a single <code>Config</code> struct and passed by pointer to everyone who
+          needs it.
+        </p>
+      </article>
+
+      <article class="walk" id="pkg-queen-db">
+        <header class="walk__head"><span class="walk__file">pkg/queen/internal/db/db.go</span><span class="walk__role">Database bootstrap</span></header>
+        <p>
+          The protocol for safely evolving a database over time is called <strong>migrations</strong> — small,
+          numbered SQL scripts that are applied in order. Each one runs exactly once and is recorded in a
+          tracking table so it's never re-run by accident.
+        </p>
+        <p>
+          <code>db.go</code>:
+        </p>
+        <ol>
+          <li>Opens (or creates) the SQLite file at the configured path, or <code>:memory:</code> for tests.</li>
+          <li>Runs a tiny embedded migration runner that reads every <code>.sql</code> in the migrations folder, in numeric order, and applies each one once.</li>
+          <li>Returns a standard <code>*sql.DB</code> handle the rest of the program uses to execute queries.</li>
+        </ol>
+        <p>
+          <strong>Why INTEGER + <code>unixepoch()</code> for timestamps:</strong> we tried storing them as text first, but our pure-Go SQLite driver returns them in a quirky way that broke Go's automatic time scanning. Storing them as Unix seconds (a normal integer) and converting in our own helper was the simplest fix.
+        </p>
+      </article>
+
+      <article class="walk" id="pkg-queen-store">
+        <header class="walk__head"><span class="walk__file">pkg/queen/internal/store/*</span><span class="walk__role">Repository layer</span></header>
+        <p>
+          A pattern: every SQL query the queen runs lives in this folder. HTTP handlers and the matchmaker
+          never write SQL themselves — they call methods like <code>store.Players().Upsert(...)</code>. That means:
+        </p>
+        <ul>
+          <li>If we ever want to swap SQLite for Postgres, only this folder changes.</li>
+          <li>If a query has a bug, you know exactly where to look.</li>
+          <li>It's easier to write unit tests against typed methods than against raw SQL strings.</li>
+        </ul>
+        <p>
+          <strong><code>scan_time.go</code></strong> is the unsung hero here. The pure-Go SQLite driver (modernc)
+          has a quirk — INTEGER columns holding Unix timestamps come back sometimes as <code>int64</code>, sometimes
+          as a digit string. This helper accepts both, so callers don't have to think about it.
+        </p>
+      </article>
+
+      <article class="walk" id="pkg-queen-matchmaker">
+        <header class="walk__head"><span class="walk__file">pkg/queen/internal/matchmaker/*</span><span class="walk__role">Matchmaking brain</span></header>
+        <p>
+          The job: every so often, look at the queue, take the two people who've been waiting longest,
+          give them a fair seed, and atomically create a <code>matches</code> row.
+        </p>
+        <p>
+          There's a <strong>background ticker</strong> (default: once per second) so idle entries eventually get paired,
+          but also a <strong>manual</strong> <code>Notify()</code> hook the HTTP layer fires every time someone hits <code>POST /queue</code>.
+          This way a player who joins doesn't have to wait up to a second for the next tick — pairing happens within milliseconds.
+        </p>
+      </article>
+
+      <article class="walk" id="pkg-queen-api">
+        <header class="walk__head"><span class="walk__file">pkg/queen/internal/api/*</span><span class="walk__role">HTTP handlers</span></header>
+        <p>
+          Each file here is one or more HTTP endpoints. The routing table in <code>router.go</code> maps a URL pattern
+          to a handler. Handlers:
+        </p>
+        <ul>
+          <li>Pull out headers (especially <code>X-Player-XUID</code>) via the auth middleware.</li>
+          <li>Sanity-check the request body.</li>
+          <li>Call into the <code>store</code> package to do the actual work.</li>
+          <li>Write a JSON response (or a useful HTTP error code if something went wrong).</li>
+        </ul>
+        <p>
+          <strong>Full endpoint list:</strong>
+          <code>POST /players</code>, <code>GET /players/{xuid}</code>, <code>POST /queue</code>,
+          <code>DELETE /queue</code>, <code>DELETE /queue/{xuid}</code>, <code>GET /queue</code>,
+          <code>GET /me</code>, <code>GET /me/match</code>, <code>GET /matches/{id}</code>,
+          <code>GET /seeds/categories</code>, <code>GET /health</code>.
+        </p>
+      </article>
+
+      <article class="walk" id="pkg-worker-main">
+        <header class="walk__head"><span class="walk__file">pkg/worker/main.go</span><span class="walk__role">Per-player helper (placeholder)</span></header>
+        <p>
+          This is mostly a placeholder. In Phase 3 it will:
+        </p>
+        <ol>
+          <li>Authenticate with the queen using the player's XUID.</li>
+          <li>Poll the queen for assignments (or get them pushed).</li>
+          <li>When matched, launch the Bedrock Dedicated Server locally with the queen's chosen seed.</li>
+          <li>Watch that server process for events (player joins, world loaded, win, loss, disconnect, forfeit) and stream them back.</li>
+          <li>Render a small overlay (Tauri, in Phase 10) so the player can see the match scoreboard and chat.</li>
+        </ol>
+      </article>
+
+      <article class="walk" id="sql-migrations">
+        <header class="walk__head"><span class="walk__file">SQL migrations</span><span class="walk__role">Database schema</span></header>
+        <p>
+          Four numbered scripts that build the schema step by step:
+        </p>
+        <ul>
+          <li><strong><code>0001_initial_schema.sql</code></strong> — creates a tiny <code>schema_version</code> table so the runner knows which migrations have already been applied.</li>
+          <li><strong><code>0002_players.sql</code></strong> — players table: <code>xuid</code> (Xbox ID, the primary key), <code>gamertag</code>, <code>elo</code> (default 1200), <code>provisional</code> (boolean, true until they've played enough matches to settle their true rating), and timestamp columns.</li>
+          <li><strong><code>0003_queue_entries.sql</code></strong> — queue table: one row per queued player, <code>status</code> of <code>waiting</code> or <code>matched</code>, plus the player ID and a timestamp.</li>
+          <li><strong><code>0004_matches.sql</code></strong> — matches table: one row per match created, with the <code>seed</code>, a <code>status</code> (pending → running → completed_* or forfeited), the two players, and timestamps.</li>
+        </ul>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- =============== PHASES =============== -->
+<section id="phases" class="section section--alt">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">📅 Where we're going</span>
+      <h2 class="section__title">The 11-Phase Roadmap</h2>
+      <p class="section__lede">
+        The full plan, distilled. Green chips are shipped; orange chips are pending; the small "💬" cards
+        under Phase 9 are the chat-command sub-feature we added recently.
+      </p>
+    </header>
+
+    <ol class="phasetimeline" aria-label="Roadmap timeline">
+
+      <li class="phase phase--done">
+        <div class="phase__dot" aria-hidden="true">✓</div>
+        <h3>Phase 0 — Project Skeleton</h3>
+        <p>Set up the Go module, project layout, Makefile, and CI scaffolding.</p>
+      </li>
+
+      <li class="phase phase--done">
+        <div class="phase__dot" aria-hidden="true">✓</div>
+        <h3>Phase 1 — Seed Category Pipeline</h3>
+        <p>Wrangle the 88k+ FSG seeds into 6 categories with a typed manifest. <em>That's the seedgen command.</em></p>
+      </li>
+
+      <li class="phase phase--done">
+        <div class="phase__dot" aria-hidden="true">✓</div>
+        <h3>Phase 2 — Accounts, Queue, Matchmaking</h3>
+        <p>Players, queue, pairings, ratings-ready. 10 endpoints. End-to-end test passed.</p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">3</div>
+        <h3>Phase 3 — Local Worker Agent</h3>
+        <p>Real worker implementation that connects to the queen and runs BDS locally for each match.</p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">4</div>
+        <h3>Phase 4 — Real BDS Startup</h3>
+        <p>Auto-detect or install BDS, generate correct <code>server.properties</code>, hand the chosen seed to BDS.</p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">5</div>
+        <h3>Phase 5 — Result Events</h3>
+        <p>Winner / loser / cancel / forfeit handler with duplicate rejection and a robust state machine.</p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">6</div>
+        <h3>Phase 6 — Ratings (Elo)</h3>
+        <p>Once a match ends, update both players' Elo. Promote past provisional after N matches. <em>This is where <code>/draw</code> lands — both players' Elo moves toward each other.</em></p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">7</div>
+        <h3>Phase 7 — Xbox Live Auth</h3>
+        <p>Replace the dev <code>X-Player-XUID</code> header with a real OAuth flow against Xbox Live.</p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">8</div>
+        <h3>Phase 8 — Anti-Cheat</h3>
+        <p>Server-side timing analysis + cross-validation to catch obviously impossible runs.</p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">9</div>
+        <h3>Phase 9 — MCBE Add-on</h3>
+        <p>A Bedrock add-on that wires in the chat commands and shows match UI in-game.</p>
+
+        <div class="subfeatures">
+          <div class="subfeature">
+            <h4>💬 /forfeit</h4>
+            <p>Type it any time during a match. The match immediately ends, you lose, the other player wins. No confirmation needed.</p>
+          </div>
+          <div class="subfeature">
+            <h4>💬 /seedchange</h4>
+            <p>Requests a new, different seed. The other player sees the prompt and has <strong>30 seconds</strong> to type <code>/seedchange</code> back to agree.<br>
+              If they agree, both BDS servers regenerate the world, the run timer resets, the timer of how many changes you've used ticks up.<br>
+              Maximum of <strong>3</strong> dual-agreed changes per match. Going over the limit simply ignores further requests.</p>
+          </div>
+          <div class="subfeature">
+            <h4>💬 /draw</h4>
+            <p>Same consent flow as <code>/seedchange</code> — the other player must agree within 30 seconds — but the result is the match ends with status <code>completed_draw</code> instead of a fresh seed. No Elo change.</p>
+          </div>
+          <div class="subfeature subfeature-data">
+            <h4>🗃️ Data model used by all three</h4>
+            <p>
+              A new <code>match_state_requests</code> table tracks every pending proposal:
+              <code>id</code>, <code>match_id</code>, <code>request_type</code> (<code>seedchange</code> | <code>draw</code>),
+              <code>requested_by</code>, <code>expires_at</code> (now + 30s), <code>status</code> (<code>pending</code> | <code>agreed</code> | <code>expired</code> | <code>rejected</code>).
+              The <code>matches</code> table gains a <code>seed_change_count</code> column to enforce the 3-per-match cap.
+            </p>
+          </div>
+        </div>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">10</div>
+        <h3>Phase 10 — Tauri Overlay</h3>
+        <p>A small native window for the launcher that shows the chat commands UI, recent results, and live score.</p>
+      </li>
+
+      <li class="phase">
+        <div class="phase__dot" aria-hidden="true">11</div>
+        <h3>Phase 11 — Launch from Launcher</h3>
+        <p>Install the worker as a service, register a real Minecraft launch path so everything is one click.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- =============== TRY IT =============== -->
+<section id="tryit" class="section">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">🚀 Get hands-on</span>
+      <h2 class="section__title">Try It Yourself</h2>
+      <p class="section__lede">
+        These commands assume you've already installed <a href="https://go.dev/dl/" target="_blank" rel="noopener">Go 1.25</a>
+        and cloned this repo. Click any code block to copy it.
+      </p>
+    </header>
+
+    <div class="cmdlist">
+      <div class="cmdcard">
+        <h3>1️⃣ Build everything</h3>
+        <p>Compile the queen and worker from source.</p>
+        <div class="copyblock"><code>make build</code><button class="copy-btn" data-copy="make build">Copy</button></div>
+        <p class="small">If you can't use <code>make</code>, the equivalent raw commands are <code>go build -o bin/queen ./pkg/queen</code> and <code>go build -o bin/worker ./pkg/worker</code>.</p>
+      </div>
+
+      <div class="cmdcard">
+        <h3>2️⃣ Typecheck + vet the entire project</h3>
+        <p>Verifies all Go files compile and have no suspicious patterns.</p>
+        <div class="copyblock"><code>make typecheck</code><button class="copy-btn" data-copy="make typecheck">Copy</button></div>
+        <p class="small">Equivalent: <code>go vet ./... &amp;&amp; go build ./...</code></p>
+      </div>
+
+      <div class="cmdcard">
+        <h3>3️⃣ Run the test suite</h3>
+        <p>Every <code>_test.go</code> file's tests will run.</p>
+        <div class="copyblock"><code>go test ./...</code><button class="copy-btn" data-copy="go test ./...">Copy</button></div>
+      </div>
+
+      <div class="cmdcard">
+        <h3>4️⃣ Start the queen</h3>
+        <p>Spins up the matchmaking service on port <code>:8080</code> with a fresh SQLite file at <code>data/queen.db</code>.</p>
+        <div class="copyblock"><code>make run-queen</code><button class="copy-btn" data-copy="make run-queen">Copy</button></div>
+      </div>
+
+      <div class="cmdcard">
+        <h3>5️⃣ Smoke test the API in another terminal</h3>
+        <p>Hit a few endpoints to confirm the service is alive.</p>
+        <div class="copyblock"><code>curl http://127.0.0.1:8080/health</code><button class="copy-btn" data-copy="curl http://127.0.0.1:8080/health">Copy</button></div>
+        <div class="copyblock"><code>curl http://127.0.0.1:8080/seeds/categories</code><button class="copy-btn" data-copy="curl http://127.0.0.1:8080/seeds/categories">Copy</button></div>
+      </div>
+
+      <div class="cmdcard">
+        <h3>6️⃣ Simulate two players joining the queue</h3>
+        <p>You'll see the matchmaker pair alice and bob within a second.</p>
+        <div class="copyblock"><code>curl -X POST http://127.0.0.1:8080/queue \
+  -H "X-Player-XUID: alice-101" \
+  -H "X-Player-Gamertag: Alice"</code><button class="copy-btn" data-copy='curl -X POST http://127.0.0.1:8080/queue -H "X-Player-XUID: alice-101" -H "X-Player-Gamertag: Alice"'>Copy</button></div>
+        <div class="copyblock"><code>curl -X POST http://127.0.0.1:8080/queue \
+  -H "X-Player-XUID: bob-202" \
+  -H "X-Player-Gamertag: Bob"</code><button class="copy-btn" data-copy='curl -X POST http://127.0.0.1:8080/queue -H "X-Player-XUID: bob-202" -H "X-Player-Gamertag: Bob"'>Copy</button></div>
+      </div>
+
+      <div class="cmdcard">
+        <h3>7️⃣ Push to GitHub</h3>
+        <p>If you've added files and want to publish them.</p>
+        <div class="copyblock"><code>git add -A &amp;&amp; git commit -m "describe your change" &amp;&amp; git push</code><button class="copy-btn" data-copy='git add -A && git commit -m "describe your change" && git push'>Copy</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== GLOSSARY =============== -->
+<section id="glossary" class="section section--alt">
+  <div class="container">
+    <header class="section__head">
+      <span class="section__kicker">📖 Speaking the language</span>
+      <h2 class="section__title">General Glossary</h2>
+      <p class="section__lede">
+        Words you'll hear in this project that may be new. Each gets a plain-English definition and a
+        short example.
+      </p>
+    </header>
+
+    <div class="glossgrid">
+
+      <article class="gloss"><h3>📦 Module</h3><p>Reusable bundle of code. In Go, a module is what your <code>go.mod</code> declares. Modules can be third-party ("dependencies") or your own ("internal packages").</p></article>
+
+      <article class="gloss"><h3>🧩 Package</h3><p>A single folder of <code>.go</code> files that share a namespace. Every file in that folder starts with <code>package foo</code>. Packages are the unit of reuse and visibility in Go.</p></article>
+
+      <article class="gloss"><h3>🔧 Compile</h3><p>To translate code from the language humans type (Go source) into the language computers execute (machine code). <code>go build</code> does this.</p><p class="small"><em>"Will it compile?"</em> is a quick way to ask "is this code even valid Go?" — you don't actually need to run it to answer.</p></article>
+
+      <article class="gloss"><h3>🚀 Binary</h3><p>The file <code>go build</code> produces. A single, self-contained executable program. We put ours in <code>bin/</code>.</p></article>
+
+      <article class="gloss"><h3>📝 Migration</h3><p>A small SQL script that changes the structure (or sometimes contents) of a database. Each one is numbered so we always apply them in order, never twice. Migrations let you evolve a database safely over time instead of editing schema by hand.</p></article>
+
+      <article class="gloss"><h3>🔒 Transaction</h3><p>A group of database operations that either <em>all</em> succeed or <em>none</em> of them happen. Imagine moving money: you must subtract from one account AND add to another; if anything goes wrong in the middle, both should be undone. That's a transaction. We use them in <code>CreateMatch</code> so a match is never created without also flipping the queue rows.</p></article>
+
+      <article class="gloss"><h3>🗄️ Repository pattern</h3><p>A way of organizing code where all database access lives in a single dedicated layer (our <code>pkg/queen/internal/store/</code>). Higher layers (HTTP handlers, the matchmaker) call repository methods instead of writing SQL. Makes testing and swapping databases much easier.</p></article>
+
+      <article class="gloss"><h3>🌐 HTTP / REST</h3><p>The rules for how programs talk to each other over the network. "REST" is the style where URLs identify resources (<code>/queue</code>, <code>/players/42</code>) and HTTP verbs describe the action (<code>POST</code>, <code>GET</code>, <code>DELETE</code>).</p></article>
+
+      <article class="gloss"><h3>🦎 SQLite</h3><p>A database that lives in a single file on disk. No server to install. Perfect for self-contained apps. Our match history fits in one file you can copy or e-mail.</p></article>
+
+      <article class="gloss"><h3>🧵 Goroutine</h3><p>A "lightweight thread" in Go. Cheap to spawn — a typical Go program runs thousands at once without breaking a sweat. Our <code>matchmaker</code> runs one as a background ticker without blocking the HTTP server.</p></article>
+
+      <article class="gloss"><h3>🏷️ Idempotent</h3><p>A operation you can run any number of times and get the same result. Our <code>JoinQueue</code> is idempotent — joining twice doesn't put you in line twice; it just confirms you're already there.</p></article>
+
+      <article class="gloss"><h3>🪙 Elo / Glicko</h3><p>Rating systems. Elo is the classic chess rating: if you beat a stronger player, your rating jumps more than if you beat a weaker one. We'll use it (or its cousin Glicko-2) in Phase 6 to compute updated ratings after each match.</p></article>
+
+      <article class="gloss"><h3>🛡️ Provisional rating</h3><p>A starting rating used when we don't yet know a player's true skill. While "provisional", their results count more heavily so we find their real rating quickly.</p></article>
+
+      <article class="gloss"><h3>🌱 Seed</h3><p>A unique number that deterministically generates a Minecraft world. Same seed = same world. Two players in a ranked match are given the seed of a world we know is fair and interesting, so they race on identical terrain.</p></article>
+
+      <article class="gloss"><h3>🧑‍💻 Worker</h3><p>A small helper program that lives on the player's machine. It connects to the queen over the internet, launches BDS locally, and streams match events back.</p></article>
+
+      <article class="gloss"><h3>🌍 BDS</h3><p>Bedrock Dedicated Server — Mojang's official server software for Minecraft Bedrock Edition. The actual program that runs the multiplayer world.</p></article>
+
+      <article class="gloss"><h3>🔀 TLS / HTTPS</h3><p>Encrypted HTTP. Browsers show it as a padlock icon. We'll use it in production so XUIDs and match results can't be sniffed off the wire. In dev we run plain HTTP on localhost.</p></article>
+
+      <article class="gloss"><h3>🪪 OAuth</h3><p>The "log in with another service" pattern. We'll use Xbox Live OAuth in Phase 7 so players prove they really are who their gamertag says.</p></article>
+
+      <article class="gloss"><h3>📡 Streaming</h3><p>Sending data continuously rather than as a single big blob. Used for live match events so the queen sees updates within a second.</p></article>
+
+    </div>
+  </div>
+</section>
+
+<!-- =============== FOOTER =============== -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <strong>MCSR Ranked Bedrock Edition</strong> · Repository:
+      <a href="https://github.com/narwalcoco/MCSR-Ranked-Bedrock-Edition" target="_blank" rel="noopener">github.com/narwalcoco/MCSR-Ranked-Bedrock-Edition</a>
+    </div>
+    <div class="footer__meta">
+      Documentation site · Built with vanilla HTML, CSS &amp; JS · No build step, no server needed — just open <code>docs/site/index.html</code> in any browser.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
