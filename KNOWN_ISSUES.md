@@ -47,7 +47,16 @@ Copy this when logging a new issue:
 
 ## Open / Unresolved
 
-*None right now.*
+### 2025-06-26 — Phase 3: Worker re-registration ignores changed `max_slots`
+
+- **Phase:** 3 — Local Worker Agent
+- **Component(s):** `pkg/queen/internal/store/workers.go` → `RegisterWorker`
+- **Trigger:** Worker A registers with `max_slots=4` (4 `runner_slots` rows created). Worker A restarts with `--max-slots=8` and re-registers (same name+host).
+- **Symptom:** The queen refreshes the worker's `auth_token` and `last_heartbeat` but does NOT add the 4 missing slot rows. The worker advertises 8 slots, the queen only has 4. Mismatch.
+- **Root cause:** Re-registration is idempotent by `(name, host)` — it refreshes the row but doesn't reconcile `max_slots`. Slot creation only happens on the **first** registration.
+- **Workaround / Fix:** For Phase 3 dev testing, use a unique worker name when changing `--max-slots`. Phase 4+ should either (a) reconcile slots on re-registration (add/remove rows to match), or (b) reject re-registration with 409 if `max_slots` differs.
+- **Watch out:** If a worker shows fewer slots in `GET /workers/{id}/slots` than its `max_slots` field claims, this is the cause.
+- **Why unresolved:** Low priority for Phase 3 (single-worker dev). Blocking for Phase 4 multi-worker deployments.
 
 ---
 

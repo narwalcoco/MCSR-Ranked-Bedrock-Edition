@@ -76,9 +76,14 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /queue", s.handleListQueue)
 	s.mux.HandleFunc("GET /matches/{id}", s.handleGetMatch)
 
-	// Silence unused-import warning for context when its only consumer
-	// (a future handler) hasn't landed yet.
-	_ = context.TODO
+	// Phase 3: workers + slots.
+	s.mux.HandleFunc("POST /workers", s.handleRegisterWorker)
+	s.mux.HandleFunc("GET /workers", s.handleListWorkers)
+	s.mux.HandleFunc("GET /workers/{id}", s.handleGetWorker)
+	s.mux.HandleFunc("POST /workers/{id}/heartbeat", s.handleWorkerHeartbeat)
+	s.mux.HandleFunc("POST /workers/{id}/drain", s.handleDrainWorker)
+	s.mux.HandleFunc("GET /workers/{id}/slots", s.handleListWorkerSlots)
+	s.mux.HandleFunc("GET /slots/free", s.handleListFreeSlots)
 }
 
 // HealthResponse describes service liveness.

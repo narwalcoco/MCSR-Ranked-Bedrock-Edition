@@ -298,6 +298,7 @@ Player-issued commands typed in MCBE chat during a live match. Chat input is det
 | **`/forfeit`** | None — single-player | n/a — instant | None | Match ends as a Loss for the typist / Win for the opponent (Phase 6 ratings). Any pending request is cancelled. |
 | **`/seedchange`** | Other player must also type `/seedchange` | 30 seconds from the first request | Max 3 *agreed* changes per match (`matches.seed_change_count`) | Both players kicked; fresh seed picked from the same category; world regenerated; in-game timer + splits reset to 0:00. |
 | **`/draw`** | Other player must also type `/draw` | 30 seconds from the first request | None — a match finalizes via draw at most once | Match ends immediately as `completed_draw`; both Elo updated per Phase 6 draw formula. |
+| **`/report`** | None — single-player | n/a — instant | One per player per match | Sends a report to queen moderators. The report contains: match ID, reporting player, reported player, a freeform reason string, and an optional `evidence` blob (Phase 7+ could attach screenshots/video). No gameplay effect — does not pause, forfeit, or alter the match. |
 
 **State machine**
 
@@ -318,11 +319,12 @@ Player-issued commands typed in MCBE chat during a live match. Chat input is det
 
 - **New table** `match_state_requests` (`id`, `match_id`, `request_type` ∈ {`seedchange`, `draw`}, `requested_by` (player_id), `requested_at`, `expires_at`, `status` ∈ {`pending`, `agreed`, `expired`, `cancelled`})
 - **Extend `matches`:** add `seed_change_count INTEGER NOT NULL DEFAULT 0`
-- **Extend `match_events`:** add event types `seed_change_requested`, `seed_change_agreed`, `seed_change_expired`, `seed_change_completed`, `draw_requested`, `draw_agreed`, `forfeit`. The `seed_change_completed` event carries `{ old_seed, new_seed, agreed_by }`.
+- **New table** `reports` (`id`, `match_id` REFERENCES matches(id), `reported_by` (player_id), `reported_player` (player_id), `reason` TEXT NOT NULL, `evidence` TEXT, `created_at` INTEGER NOT NULL DEFAULT (unixepoch())). One `UNIQUE(match_id, reported_by)` constraint so each player can report each match at most once.
+- **Extend `match_events`:** add event types `seed_change_requested`, `seed_change_agreed`, `seed_change_expired`, `seed_change_completed`, `draw_requested`, `draw_agreed`, `forfeit`, `report_submitted`. The `seed_change_completed` event carries `{ old_seed, new_seed, agreed_by }`; the `report_submitted` event carries `{ reported_by, reported_player, reason }`.
 
 **Constraints / edge cases**
 
-- Only one *active* `match_state_requests` row per match at a time. While one row is `pending`, a different command of a different type is rejected with 409 `request_in_progress`. The same player re-typing the same command is **idempotent** (no duplicate rows).
+- Only one *active* `match_state_requests` row per match at a time. While one row is `pending`, a different command of a different type is rejected with 409 `request_in_progress`. The same player re-typing the same command is **idempotent** (no duplicate rows). `/report` is exempt from the one-active-request rule — it can be issued at any time, including while a `/seedchange` or `/draw` is pending.
 - A 4th `/seedchange` request is rejected with 409 `seed_change_cap_reached` once `seed_change_count == 3`. `/forfeit` and `/draw` are uncapped.
 - Pending requests auto-cancel on `/forfeit` (status → `cancelled`). No further resolution steps after that.
 - Pending requests expire naturally via `expires_at`. Expiry checks run on a Phase 5 background tick (or piggybacked onto the existing matchmaker loop).
